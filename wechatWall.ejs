@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>微信墙</title>
+    <style>
+         img{
+            width: 300px;
+        }
+    </style>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body ng-app="myApp" ng-controller="wxWallController">
+    <div class="main-page">
+        <div class="left-menu">
+            <h1 class="left-menu-title">微信墙</h1>
+            <div class="left-menu-wechat-icon">
+                <img src="/images/wechat-icon.jpg">
+            </div>
+            <h2 class="left-menu-desc">关注我并发送消息就可以上墙啦</h2>
+        </div>
+        <div class="right-main">
+                <div class="right-main-message" ng-repeat="message in messages | filter:{orderBy:message.xml.CreateTime}">
+                    <div name="message-icon">
+                        <img class="right-main-message-icon" src="http://wx.qlogo.cn/mmopen/7JYu0VpqZgD1OrcKcw2aD8uNGiaNNzQYOrFlxsUoEt3yYEnvgj6h3qT239dnwT8517hs4es0LI4ytAGFpUQNwdLf96vKNRv8v/0" alt="">
+                    </div>
+                    <div name="message-body">
+                        <h1>{{message.user.nickname}}说</h1>
+                        <h2 ng-if="message.xml.MsgType[0]=='text'" class="right-main-message-body">&nbsp;&nbsp;{{message.xml.Content[0]}}</h2>
+                        <!--<img ng-if="message.xml.MsgType[0]=='image'" ng-src={{message.xml.PicUrl[0]}}>-->
+                        <!--<div ng-bind-html="message.xml.PicUrl[0]"></div>-->
+                        <div ng-bind-html-unsafe="message.xml.PicUrl[0]"></div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="/bower_components/angular/angular.min.js"></script>
+<script type="text/javascript">
+
+    var ws ;
+    var messageList =[];
+    angular.module('myApp',[])
+            .controller('wxWallController',function($scope){
+                $scope.messages = messageList;
+                startWebSocket();
+                function startWebSocket() {
+                    ws = new WebSocket('ws://115.159.110.184:9902');
+                    ws.onopen = function (evt){
+                        ws.send("connected");
+                    }
+                    ws.onmessage = function(evt) {
+
+                        var message = JSON.parse(evt.data);
+                        message.user = message.user || {};
+                        if (message.xml.MsgType[0]=='image'){
+                            message.xml.PicUrl = showImage(message.xml.PicUrl);
+                        }
+//                        var userName = message.user.nickname;
+//                        var headimg = message.user.headimgurl;
+//                        $scope.messages.push(message);
+//                        alert(message.xml.MsgType[0]);
+                        $scope.$apply(function(){
+                            $scope.messages.push(message);
+                            $scope.messages.reverse();
+                        })
+                        console.log( $scope.messages);
+                    };
+                    ws.onclose = function (evt){
+                        console.log("微信墙断开连接");
+                    };
+                    ws.onerror = function (evt){
+                        console.log("错误");
+                    }
+                }
+            });
+
+
+    function showImage(url) {
+
+        var frameid = 'frameimg' + Math.random();
+        window.img = '<img id="img" style="width:50%" src=\'' + url + '?' + Math.random() + '\' /><script>window.onload = function() { parent.document.getElementById(\'' + frameid + '\').height = document.getElementById(\'img\').height+\'px\'; }<' + '/script>';
+        return ('<iframe id="'+frameid+'" src="javascript:parent.img;" frameBorder="0" scrolling="no" width="60%"></iframe>');
+//        return javascript:parent.img;
+    }
+</script>
+
+</html>

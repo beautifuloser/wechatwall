@@ -1,17 +1,16 @@
 {
-  "name": "wechatwall",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "weixin-dev",
+  "description": "weixin development",
+  "version": "0.0.1",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "validate": "node validate.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "crypto": "0.0.3",
-    "qs": "^6.1.0",
-    "tmpl": "^1.0.4",
-    "xml2js": "^0.4.16"
+    "qs": "*",
+    "tmpl": "*",
+    "xml2js": "*",
+    "ws": "*",
+    "request": "*"
   }
 }
